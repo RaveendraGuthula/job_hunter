@@ -43,6 +43,7 @@ export type FieldIntent =
   | "FULL_NAME"
   | "FIRST_NAME"
   | "LAST_NAME"
+  | "NAME"
   | "EMAIL"
   | "PHONE"
   | "CITY"
@@ -51,8 +52,12 @@ export type FieldIntent =
   | "JOB_TITLE"
   | "TOTAL_EXPERIENCE"
   | "SKILLS"
+  | "SKILL_BOOLEAN"
+  | "SKILL_EXPERIENCE"
+  | "SKILL_LIST"
   | "DEGREE"
   | "EDUCATION_LEVEL"
+  | "EDUCATION"
   | "CERTIFICATION"
   | "SALARY_CURRENT"
   | "SALARY_EXPECTED"
@@ -60,6 +65,8 @@ export type FieldIntent =
   | "WORK_AUTHORIZATION"
   | "RELOCATION"
   | "REMOTE_WORK"
+  | "AVAILABILITY"
+  | "FREE_TEXT"
   | "UNKNOWN";
 
 export interface Classification {

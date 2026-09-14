@@ -1,3 +1,4 @@
+import { maybeArmChatEngine } from "./chat-assistant";
 import { maybeArmFormEngine } from "./form-assistant";
 import { mountIsolated } from "./isolate";
 
@@ -25,6 +26,7 @@ function bootstrap(): void {
   mount.shadow.appendChild(badge);
 
   maybeArmFormEngine();
+  maybeArmChatEngine();
 }
 
 if (document.readyState === "loading") {

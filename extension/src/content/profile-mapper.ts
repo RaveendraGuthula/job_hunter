@@ -45,6 +45,7 @@ export function proposeValue(intent: FieldIntent, profile: Profile | null): Prop
 
   switch (intent) {
     case "FULL_NAME":
+    case "NAME":
       return fromField(profile.full_name, intent);
     case "FIRST_NAME":
     case "LAST_NAME": {
@@ -86,14 +87,33 @@ export function proposeValue(intent: FieldIntent, profile: Profile | null): Prop
       }
       return { outcome: "answer", answer: { value: String(years), source: "PROFILE" } };
     }
-    case "SKILLS": {
+    case "SKILLS":
+    case "SKILL_LIST": {
       const skills = (profile.skills ?? []).map((skill) => skill.name).filter(Boolean);
       if (skills.length === 0) {
         return { outcome: "blocked", reason: "No skills in your confirmed profile." };
       }
       return { outcome: "answer", answer: { value: skills.join(", "), source: "PROFILE" } };
     }
-    case "DEGREE":
+    case "DEGREE": {
+      const degree = profile.education?.[0]?.degree;
+      if (degree) {
+        return { outcome: "answer", answer: { value: degree, source: "DERIVED" } };
+      }
+      return { outcome: "blocked", reason: "No education entry in your confirmed profile. Fill \"Education\" manually." };
+    }
+    case "EDUCATION": {
+      const entries = (profile.education ?? []).filter(
+        (entry) => entry && (entry.degree || entry.institution),
+      );
+      if (entries.length === 0) {
+        return { outcome: "blocked", reason: "No education in your confirmed profile. Fill \"Education\" manually." };
+      }
+      const value = entries
+        .map((entry) => [entry.degree, entry.institution].filter(Boolean).join(", "))
+        .join("; ");
+      return { outcome: "answer", answer: { value, source: "DERIVED" } };
+    }
     case "EDUCATION_LEVEL": {
       const degree = profile.education?.[0]?.degree;
       if (degree) {
@@ -136,6 +156,18 @@ export function proposeValue(intent: FieldIntent, profile: Profile | null): Prop
       }
       return { outcome: "blocked", reason: "Work authorization / visa is sensitive. It is not set in your profile — answer manually." };
     }
+    case "AVAILABILITY": {
+      const notice = profile.preferences?.notice_period;
+      if (notice && notice.trim().length > 0) {
+        return { outcome: "answer", answer: { value: notice.trim(), source: "PROFILE" } };
+      }
+      return { outcome: "blocked", reason: "Availability is not determinable from your profile — answer manually." };
+    }
+    case "SKILL_BOOLEAN":
+    case "SKILL_EXPERIENCE":
+      return { outcome: "blocked", reason: "Skill-specific question; it is answered with question context." };
+    case "FREE_TEXT":
+      return { outcome: "blocked", reason: "Open-ended question; a human-authored answer is required." };
     case "RELOCATION":
       return preferenceFlag(profile.preferences?.relocation_preference);
     case "REMOTE_WORK":

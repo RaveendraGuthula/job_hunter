@@ -7,3 +7,7 @@ export const API_PREFIX = `${API_BASE_URL}/api`;
 // Keep it false for production-safe behavior; tests exercise the engine modules
 // directly and may mount the assistant with the flag overridden.
 export const FORM_ENGINE_ARMED = false;
+
+// The Chatbot Engine (conversational application flows) is gated the same way.
+// Keep it false for production-safe behavior.
+export const CHAT_ENGINE_ARMED = false;
