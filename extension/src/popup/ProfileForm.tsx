@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { EducationPayload, ExperiencePayload, PreferencesPayload, ProfilePayload, SkillPayload } from "../utils/api";
 
 interface ProfileFormProps {
@@ -31,6 +31,39 @@ function initialPreferences(initial?: ProfilePayload | null): PreferencesPayload
     notice_period: prefs.notice_period ?? "",
     expected_salary: prefs.expected_salary ?? null,
     current_salary: prefs.current_salary ?? null,
+  };
+}
+
+function formContents(initial?: ProfilePayload | null) {
+  return {
+    fullName: initial?.full_name ?? "",
+    email: initial?.email ?? "",
+    phone: initial?.phone ?? "",
+    location: initial?.location ?? "",
+    currentRole: initial?.current_role ?? "",
+    totalExperience: initial?.total_experience?.toString() ?? "",
+    languages: (initial?.languages ?? []).join(", "),
+    certifications: (initial?.certifications ?? []).join(", "),
+    workAuthorization: initial?.work_authorization ?? "",
+    skills: (initial?.skills ?? []).map(({ name, experience }) => ({
+      name,
+      experience,
+    })) as SkillPayload[],
+    experienceRows: (initial?.experience ?? []).map(
+      ({ employer, job_title, projects }) => ({
+        employer,
+        job_title,
+        projects: projects ?? [],
+      }),
+    ) as ExperiencePayload[],
+    educationRows: (initial?.education ?? []).map(
+      ({ degree, institution, graduation_year }) => ({
+        degree,
+        institution,
+        graduation_year,
+      }),
+    ) as EducationPayload[],
+    preferences: initialPreferences(initial),
   };
 }
 
@@ -72,6 +105,23 @@ export function ProfileForm({ initial, onSubmit }: ProfileFormProps) {
   const [preferences, setPreferences] = useState<PreferencesPayload>(
     initialPreferences(initial),
   );
+
+  useEffect(() => {
+    const contents = formContents(initial);
+    setFullName(contents.fullName);
+    setEmail(contents.email);
+    setPhone(contents.phone);
+    setLocation(contents.location);
+    setCurrentRole(contents.currentRole);
+    setTotalExperience(contents.totalExperience);
+    setLanguages(contents.languages);
+    setCertifications(contents.certifications);
+    setWorkAuthorization(contents.workAuthorization);
+    setSkills(contents.skills);
+    setExperienceRows(contents.experienceRows);
+    setEducationRows(contents.educationRows);
+    setPreferences(contents.preferences);
+  }, [initial]);
 
   function updateSkill(index: number, patch: Partial<SkillPayload>) {
     setSkills((current) =>
