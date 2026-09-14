@@ -1,0 +1,44 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Dependency directories
+node_modules/
+
+# Build outputs
+dist/
+build/
+out/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Test, lint, typecheck caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.eslintcache/
+.coverage
+htmlcov/
+
+# Uploaded files / local resume storage
+uploads/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+backend/tests
+extension/tests
+.play*

@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "AI Job Application Copilot",
+  "version": "0.1.0",
+  "description": "Assistant for job applications. Deterministic first, AI only when necessary.",
+  "action": {
+    "default_title": "AI Job Application Copilot",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.naukri.com/*"],
+      "js": ["content/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": ["storage"],
+  "host_permissions": ["https://*.naukri.com/*", "http://localhost:8000/*"]
+}
