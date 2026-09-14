@@ -1,3 +1,4 @@
+import { maybeArmFormEngine } from "./form-assistant";
 import { mountIsolated } from "./isolate";
 
 const ISOLATED_STYLES = `
@@ -22,6 +23,8 @@ function bootstrap(): void {
   badge.className = "jh-badge";
   badge.textContent = "Job Copilot foundation loaded";
   mount.shadow.appendChild(badge);
+
+  maybeArmFormEngine();
 }
 
 if (document.readyState === "loading") {
