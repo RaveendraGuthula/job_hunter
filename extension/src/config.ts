@@ -11,3 +11,9 @@ export const FORM_ENGINE_ARMED = false;
 // The Chatbot Engine (conversational application flows) is gated the same way.
 // Keep it false for production-safe behavior.
 export const CHAT_ENGINE_ARMED = false;
+
+// The AI Answer Engine adds a backend-suggested draft for complex / free-text /
+// unknown chatbot questions. Deterministic and profile-based behavior always runs
+// first and is never changed by this flag; AI answers are only ever proposals that
+// require review. Keep it false for production-safe behavior.
+export const AI_ANSWER_ENGINE_ARMED = false;

@@ -65,6 +65,10 @@ export type Profile = ProfilePayload & {
   updated_at: string;
 };
 
+// Same shape as `ProfilePayload` but with every field optional, so callers can
+// send a deliberately small subset (contact details omitted) as AI context.
+export type AnswerProfileContext = Partial<ProfilePayload> & { full_name: string };
+
 export type ResumeParseStatus = "pending" | "parsed" | "failed";
 
 export interface ResumeListItem {
@@ -240,4 +244,70 @@ export async function listJobs(): Promise<Job[]> {
 
 export async function getJobMatch(jobId: string): Promise<JobMatch> {
   return apiRequest<JobMatch>(`/jobs/${jobId}/match`);
+}
+
+export type ApiAnswerSource = "PROFILE" | "RULE" | "CACHE" | "DERIVED" | "AI" | "USER";
+
+export interface QuestionClassifyResult {
+  question: string;
+  normalized_question: string;
+  intent: string;
+  confidence: number;
+  skill_hint?: string | null;
+}
+
+export interface RelevantJobContext {
+  title?: string | null;
+  company?: string | null;
+  location?: string | null;
+  skills?: string[];
+  description?: string | null;
+}
+
+export interface ConversationTurn {
+  role: "BOT" | "USER";
+  text: string;
+}
+
+export interface QuestionAnswerResult {
+  answer: string | null;
+  confidence: number;
+  requires_user_confirmation: boolean;
+  reason: string | null;
+  answer_source: ApiAnswerSource | null;
+  intent: string;
+  was_ai_generated: boolean;
+}
+
+export interface AnswerQuestionPayload {
+  question: string;
+  relevant_profile?: AnswerProfileContext;
+  relevant_job_context?: RelevantJobContext;
+  relevant_conversation_context?: ConversationTurn[];
+}
+
+export interface AiUsageSummary {
+  total_calls: number;
+  ai_generated_answers: number;
+  failed_calls: number;
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+  average_latency_ms: number;
+  last_used_at: string | null;
+}
+
+export async function classifyQuestion(question: string): Promise<QuestionClassifyResult> {
+  return apiRequest<QuestionClassifyResult>("/questions/classify", {
+    method: "POST",
+    body: { question },
+  });
+}
+
+export async function answerQuestion(payload: AnswerQuestionPayload): Promise<QuestionAnswerResult> {
+  return apiRequest<QuestionAnswerResult>("/questions/answer", { method: "POST", body: payload });
+}
+
+export async function getAiUsage(): Promise<AiUsageSummary> {
+  return apiRequest<AiUsageSummary>("/usage/ai");
 }

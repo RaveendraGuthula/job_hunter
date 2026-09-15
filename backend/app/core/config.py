@@ -48,6 +48,10 @@ class Settings(BaseSettings):
     ai_model: str = "llama-3.3-70b-versatile"
     groq_api_key: str = ""
 
+    ai_max_output_tokens: int = 500
+    ai_max_calls_per_day: int = 50
+    ai_timeout_seconds: float = 30.0
+
     storage_provider: str = "local"
     storage_local_path: str = "./uploads"
     storage_bucket: str = ""

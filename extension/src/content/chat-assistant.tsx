@@ -3,15 +3,16 @@ import { createRoot } from "react-dom/client";
 import type { Root } from "react-dom/client";
 import { ChatApplyPanel } from "../components/ChatApplyPanel";
 import { ChatReviewPanel } from "../components/ChatReviewPanel";
-import { CHAT_ENGINE_ARMED } from "../config";
-import { getProfile } from "../utils/api";
+import { AI_ANSWER_ENGINE_ARMED, CHAT_ENGINE_ARMED } from "../config";
+import { answerQuestion, getProfile } from "../utils/api";
 import type { Profile } from "../utils/api";
+import { buildAiProposal, isAiEligibleIntent, minimalProfileForAi } from "./ai-fallback";
 import { isExecutable, runChat } from "./chat-agent";
 import type { ChatDecision } from "./chat-agent";
 import type { ChatContainerDetection } from "./chatbot-detector";
 import { detectChatContainer } from "./chatbot-detector";
 import { clickOption, sendAnswer, typeInput } from "./chat-interaction";
-import type { ChatMessage, ChatPhase, ChatSendRecord } from "./chat-engine-types";
+import type { ChatMessage, ChatPhase, ChatProposal, ChatSendRecord } from "./chat-engine-types";
 import type { AnswerSource } from "./form-engine-types";
 import { fingerprintOf, fingerprintOfMessage, toChatMessages } from "./message-segmenter";
 import { ChatSessionController, createSession, loadChatSession, saveChatSession } from "./chat-session-manager";
@@ -205,6 +206,28 @@ export function ChatAssistant({ container, onClose }: ChatAssistantProps) {
     };
   }
 
+  async function aiProposalFor(decision: ChatDecision): Promise<ChatProposal | null> {
+    if (!AI_ANSWER_ENGINE_ARMED) {
+      return null;
+    }
+    if (!isAiEligibleIntent(decision.question.intent)) {
+      return null;
+    }
+    const profile = profileRef.current;
+    if (profile === null) {
+      return null;
+    }
+    try {
+      const result = await answerQuestion({
+        question: decision.question.text,
+        relevant_profile: minimalProfileForAi(profile),
+      });
+      return buildAiProposal(result);
+    } catch {
+      return null;
+    }
+  }
+
   async function drainPending(): Promise<void> {
     if (busyRef.current) {
       return;
@@ -232,10 +255,21 @@ export function ChatAssistant({ container, onClose }: ChatAssistantProps) {
         } else if (isReviewLike(next)) {
           pendingRef.current.shift();
           clearWaitTimer();
-          setReviewDecision(next);
+          const proposal = await aiProposalFor(next);
+          setReviewDecision(
+            proposal === null ? next : { ...next, plan: { ...next.plan, proposal } },
+          );
           setPhase("review");
           return;
         } else {
+          const proposal = await aiProposalFor(next);
+          if (proposal !== null) {
+            pendingRef.current.shift();
+            clearWaitTimer();
+            setReviewDecision({ ...next, plan: { ...next.plan, proposal } });
+            setPhase("review");
+            return;
+          }
           pendingRef.current.shift();
           const record = skipOrBlockedRecord(next);
           controller.markQuestionProcessed(fingerprintOf(next.question.text));
