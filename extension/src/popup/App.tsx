@@ -3,6 +3,7 @@ import { EXTENSION_NAME, VERSION } from "../version";
 import { ApiError, getProfile, login, register } from "../utils/api";
 import type { Profile } from "../utils/api";
 import { clearToken, getToken } from "../utils/storage";
+import { ApplicationPanel } from "./ApplicationPanel";
 import { AuthForm } from "./AuthForm";
 import type { AuthMode } from "./AuthForm";
 import { JobPanel } from "./JobPanel";
@@ -11,7 +12,7 @@ import { ProfilePanel } from "./ProfilePanel";
 type View =
   | { name: "loading" }
   | { name: "auth"; error: string | null }
-  | { name: "menu"; tab: "profile" | "jobs"; profile: Profile | null };
+  | { name: "menu"; tab: "profile" | "jobs" | "applications"; profile: Profile | null };
 
 export function App() {
   const [view, setView] = useState<View>({ name: "loading" });
@@ -101,6 +102,13 @@ export function App() {
             >
               Jobs
             </button>
+            <button
+              type="button"
+              className={`jh-seg ${view.tab === "applications" ? "jh-seg--active" : ""}`}
+              onClick={() => setView({ ...view, tab: "applications" })}
+            >
+              Applications
+            </button>
           </nav>
           {view.tab === "profile" ? (
             <ProfilePanel
@@ -108,8 +116,10 @@ export function App() {
               onSaved={(profile) => setView({ name: "menu", tab: "profile", profile })}
               onLogout={handleLogout}
             />
-          ) : (
+          ) : view.tab === "jobs" ? (
             <JobPanel profile={view.profile} onLogout={handleLogout} />
+          ) : (
+            <ApplicationPanel onLogout={handleLogout} />
           )}
         </div>
       )}

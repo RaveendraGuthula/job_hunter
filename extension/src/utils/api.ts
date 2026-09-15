@@ -311,3 +311,126 @@ export async function answerQuestion(payload: AnswerQuestionPayload): Promise<Qu
 export async function getAiUsage(): Promise<AiUsageSummary> {
   return apiRequest<AiUsageSummary>("/usage/ai");
 }
+
+export type ApplicationStatus =
+  | "SAVED"
+  | "READY"
+  | "IN_PROGRESS"
+  | "REVIEW_REQUIRED"
+  | "APPLIED"
+  | "INTERVIEW"
+  | "REJECTED"
+  | "WITHDRAWN"
+  | "FAILED";
+
+export const APPLICATION_STATUSES: readonly ApplicationStatus[] = [
+  "SAVED",
+  "READY",
+  "IN_PROGRESS",
+  "REVIEW_REQUIRED",
+  "APPLIED",
+  "INTERVIEW",
+  "REJECTED",
+  "WITHDRAWN",
+  "FAILED",
+];
+
+export type ApplicationEventType =
+  | "APPLICATION_STARTED"
+  | "APPLICATION_TYPE_DETECTED"
+  | "QUESTION_RECEIVED"
+  | "QUESTION_CLASSIFIED"
+  | "ANSWER_RETRIEVED"
+  | "AI_REQUESTED"
+  | "ANSWER_GENERATED"
+  | "ANSWER_MODIFIED"
+  | "ANSWER_SUBMITTED"
+  | "USER_PAUSED"
+  | "USER_RESUMED"
+  | "CAPTCHA_DETECTED"
+  | "LOGIN_REQUIRED"
+  | "APPLICATION_COMPLETED"
+  | "APPLICATION_FAILED"
+  | "TIMEOUT"
+  | "RESUME_PARSE_FAILED"
+  | "EMERGENCY_STOP"
+  | "APPLICATION_CREATED"
+  | "APPLICATION_STATUS_CHANGED"
+  | "APPLICATION_CANCELLED"
+  | "MANUAL_TAKEOVER"
+  | "USER_CORRECTION";
+
+export interface ApplicationPayload {
+  job_title: string;
+  company?: string | null;
+  source?: string | null;
+  job_url: string;
+  status?: ApplicationStatus;
+  match_score?: number | null;
+  job_id?: string | null;
+  resume_id?: string | null;
+  application_date?: string | null;
+}
+
+export interface Application extends Omit<ApplicationPayload, "status"> {
+  id: string;
+  user_id: string;
+  job_id: string | null;
+  resume_id: string | null;
+  status: ApplicationStatus;
+  application_date: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ApplicationUpdatePayload {
+  status?: ApplicationStatus;
+  job_title?: string;
+  company?: string | null;
+  source?: string | null;
+  match_score?: number | null;
+}
+
+export interface ApplicationEvent {
+  id: string;
+  application_id: string;
+  event_type: ApplicationEventType;
+  state: string | null;
+  message: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
+export async function createApplication(payload: ApplicationPayload): Promise<Application> {
+  return apiRequest<Application>("/applications", { method: "POST", body: payload });
+}
+
+export async function listApplications(): Promise<Application[]> {
+  return apiRequest<Application[]>("/applications");
+}
+
+export async function getApplication(id: string): Promise<Application> {
+  return apiRequest<Application>(`/applications/${id}`);
+}
+
+export async function updateApplication(
+  id: string,
+  payload: ApplicationUpdatePayload,
+): Promise<Application> {
+  return apiRequest<Application>(`/applications/${id}`, { method: "PATCH", body: payload });
+}
+
+export async function listApplicationEvents(id: string): Promise<ApplicationEvent[]> {
+  return apiRequest<ApplicationEvent[]>(`/applications/${id}/events`);
+}
+
+export async function addApplicationEvent(
+  id: string,
+  eventType: ApplicationEventType,
+  message?: string,
+): Promise<ApplicationEvent> {
+  return apiRequest<ApplicationEvent>(`/applications/${id}/events`, {
+    method: "POST",
+    body: { event_type: eventType, message },
+  });
+}

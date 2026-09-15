@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import analytics, auth, health, jobs, profile, questions, resume
+from app.api import analytics, applications, auth, health, jobs, profile, questions, resume
 from app.core.config import settings
 
 APP_VERSION = "0.1.0"
@@ -23,6 +23,7 @@ def create_app() -> FastAPI:
     app.include_router(profile.router, prefix="/api/profile", tags=["profile"])
     app.include_router(resume.router, prefix="/api/resumes", tags=["resume"])
     app.include_router(jobs.router, prefix="/api/jobs", tags=["jobs"])
+    app.include_router(applications.router, prefix="/api/applications", tags=["applications"])
     app.include_router(questions.router, prefix="/api/questions", tags=["questions"])
     app.include_router(analytics.router, prefix="/api/usage", tags=["analytics"])
 
